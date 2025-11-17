@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticket Calculator</title>
+<style>
+body { font-family: -apple-system, Arial; padding: 20px; }
+input { width: 100%; padding: 10px; font-size: 18px; margin-bottom: 15px; }
+label { font-size: 16px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h2>Ticketmaster Calculator</h2>
+
+<label>Listing Price</label>
+<input id="listing" type="number" step="0.01" oninput="recalc('listing')">
+
+<label>Buyer Sees</label>
+<input id="buyer" type="number" step="0.01" oninput="recalc('buyer')">
+
+<label>Your Payout</label>
+<input id="payout" type="number" step="0.01" oninput="recalc('payout')">
+
+<script>
+let updating = false;
+
+function val(id){
+    let v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? null : v;
+}
+function set(id, v){
+    document.getElementById(id).value = v.toFixed(2);
+}
+
+function recalc(changed){
+    if(updating) return;
+    updating = true;
+
+    let list = val('listing');
+    let buyer = val('buyer');
+    let payout = val('payout');
+
+    if(changed === 'listing' && list != null){
+        buyer = list * 1.17;
+        payout = list * 0.90;
+        set('buyer', buyer);
+        set('payout', payout);
+    }
+    else if(changed === 'buyer' && buyer != null){
+        list = buyer / 1.17;
+        payout = list * 0.90;
+        set('listing', list);
+        set('payout', payout);
+    }
+    else if(changed === 'payout' && payout != null){
+        list = payout / 0.90;
+        buyer = list * 1.17;
+        set('listing', list);
+        set('buyer', buyer);
+    }
+
+    updating = false;
+}
+</script>
+
+</body>
+</html>
