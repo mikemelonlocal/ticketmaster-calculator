@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticketmaster Calculator (Auto-Fill Always from Cost)</title>
+<style>
+  body { font-family:-apple-system, Arial; padding:20px; background:#000; color:#fff; }
+  label { display:block; margin-top:14px; font-size:18px; }
+  input { width:100%; padding:12px; margin-top:6px; font-size:20px; border-radius:8px; border:1px solid #555;
+          background:#111; color:#fff; }
+  .result { margin-top:20px; font-size:19px; }
+</style>
+</head>
+<body>
+
+<h2>Ticketmaster Calculator</h2>
+
+<label>Cost (What you paid)</label>
+<input id="cost" type="number" oninput="recalc('cost')">
+
+<label>Listing Price</label>
+<input id="list" type="number" oninput="recalc('list')">
+
+<label>Buyer Sees</label>
+<input id="buyer" type="number" oninput="recalc('buyer')">
+
+<label>Your Payout</label>
+<input id="payout" type="number" oninput="recalc('payout')">
+
+<label>Profit ($)</label>
+<input id="profit" type="number" oninput="recalc('profit')">
+
+<label>Profit (%)</label>
+<input id="profitPct" type="number" step="0.0001" oninput="recalc('profitPct')">
+
+<div class="result">
+  <p><strong>Break-even Listing Price:</strong> <span id="breakEven"></span></p>
+</div>
+
+<script>
+let updating = false;
+function val(id) {
+  let v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? null : v;
+}
+
+function set(id, v) {
+  if (v === null || isNaN(v)) return;
+  document.getElementById(id).value = Number(v).toFixed(2);
+}
+
+function recalc(changed) {
+    if (updating) return;
+    updating = true;
+  let cost = val("cost");
+  let list = val("list");
+  let buyer = val("buyer");
+  let payout = val("payout");
+  let profit = val("profit");
+  let profitPct = val("profitPct");
+
+  // Always auto fill from cost to break even
+  if (changed === "cost" && cost != null) {
+      list = cost / 0.90;
+      buyer = list * 1.17;
+      payout = list * 0.90;
+      updating = false;
+}
+
+  // 3 way dependency when those fields change directly
+  if (changed === "list" && list != null) {
+    buyer = list * 1.17;
+    payout = list * 0.90;
+  } else if (changed === "buyer" && buyer != null) {
+    list = buyer / 1.17;
+    payout = list * 0.90;
+  } else if (changed === "payout" && payout != null) {
+    list = payout / 0.90;
+    buyer = list * 1.17;
+  }
+
+  // Profit from cost and payout
+  if (cost != null && payout != null) {
+    profit = payout - cost;
+    profitPct = cost > 0 ? (profit / cost) * 100 : null;
+  }
+
+  // If user edits profit
+  if (changed === "profit" && profit != null && cost != null) {
+    payout = profit + cost;
+    list = payout / 0.90;
+    buyer = list * 1.17;
+    profitPct = (profit / cost) * 100;
+  }
+
+  // If user edits profit percentage
+  if (changed === "profitPct" && profitPct != null && cost != null) {
+    profit = cost * (profitPct / 100);
+    payout = profit + cost;
+    list = payout / 0.90;
+    buyer = list * 1.17;
+  }
+
+  let breakEven = cost != null ? cost / 0.90 : null;
+
+  set("list", list);
+  set("buyer", buyer);
+  set("payout", payout);
+  set("profit", profit);
+  set("profitPct", profitPct);
+
+  if (breakEven != null) {
+    document.getElementById("breakEven").textContent = breakEven.toFixed(2);
+  }
+}
+</script>
+
+</body>
+</html>
