@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticketmaster Calculator</title>
+<style>
+body { font-family: -apple-system, Arial; padding: 20px; max-width: 600px; margin: auto; }
+input { width: 100%; padding: 10px; font-size: 18px; margin-bottom: 15px; }
+label { font-size: 16px; font-weight: 600; display: block; margin-bottom: 5px; }
+.locked { background: #f2f2f2; }
+</style>
+</head>
+<body>
+
+<h2>Ticketmaster Calculator</h2>
+
+<label>Listing Price</label>
+<input id="listing" type="number" step="0.01" oninput="recalc('listing')">
+
+<label>Buyer Sees</label>
+<input id="buyer" type="number" step="0.01" oninput="recalc('buyer')">
+
+<label>Your Payout</label>
+<input id="payout" type="number" step="0.01" oninput="recalc('payout')">
+
+<label>Your Cost (optional)</label>
+<input id="cost" type="number" step="0.01" oninput="updateProfit()">
+
+<label>Profit ($)</label>
+<input id="profit" class="locked" type="text" disabled>
+
+<label>Profit (%)</label>
+<input id="profitpct" class="locked" type="text" disabled>
+
+<label>Break-even Listing Price</label>
+<input id="breakeven" class="locked" type="text" disabled>
+
+<script>
+let updating = false;
+
+function val(id){
+    let v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? null : v;
+}
+function set(id, v){
+    document.getElementById(id).value = v.toFixed(2);
+}
+
+function recalc(changed){
+    if(updating) return;
+    updating = true;
+
+    let list = val('listing');
+    let buyer = val('buyer');
+    let payout = val('payout');
+
+    if(changed === 'listing' && list != null){
+        buyer = list * 1.17;
+        payout = list * 0.90;
+        set('buyer', buyer);
+        set('payout', payout);
+    }
+    else if(changed === 'buyer' && buyer != null){
+        list = buyer / 1.17;
+        payout = list * 0.90;
+        set('listing', list);
+        set('payout', payout);
+    }
+    else if(changed === 'payout' && payout != null){
+        list = payout / 0.90;
+        buyer = list * 1.17;
+        set('listing', list);
+        set('buyer', buyer);
+    }
+
+    updateProfit();
+    updating = false;
+}
+
+function updateProfit(){
+    let payout = val('payout');
+    let cost = val('cost');
+
+    if(cost == null || payout == null){
+        document.getElementById('profit').value = "";
+        document.getElementById('profitpct').value = "";
+        document.getElementById('breakeven').value = "";
+        return;
+    }
+
+    let profit = payout - cost;
+    document.getElementById('profit').value = profit.toFixed(2);
+
+    let pct = (profit / cost) * 100;
+    document.getElementById('profitpct').value = pct.toFixed(2) + "%";
+
+    let breakeven = cost / 0.90;
+    document.getElementById('breakeven').value = breakeven.toFixed(2);
+}
+</script>
+
+</body>
+</html>
